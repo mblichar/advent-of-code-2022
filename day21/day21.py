@@ -70,6 +70,12 @@ def get_monkey_result(monkeys, start_monkey):
 
 def solve_equation(left_side, right_side):
     result = right_side
+    operator_map = {
+        '+': operator.add,
+        '-': operator.sub,
+        '*': operator.mul,
+        '/': operator.truediv,
+    }
     reverse_operator_map = {
         '+': operator.sub,
         '-': operator.add,
@@ -78,24 +84,22 @@ def solve_equation(left_side, right_side):
     }
 
     tokens = left_side.split(' ')
+    operators_and_x = list(operator_map.keys()) + ['x']
 
-    while len(tokens) > 3:
-        op = reverse_operator_map[tokens[0]]
-
-        arg = Decimal(tokens[-1]) if tokens[1] in reverse_operator_map.keys() else Decimal(tokens[1])
-        if tokens[0] == '-' and tokens[1] not in reverse_operator_map.keys():
-            result = arg - result
-        else:
-            result = op(result, arg)
-
-        if tokens[1] in reverse_operator_map.keys():
+    while len(tokens) > 1:
+        if tokens[1] in operators_and_x:
+            arg = Decimal(tokens[-1])
+            result = reverse_operator_map[tokens[0]](result, arg)
             tokens = tokens[1:-1]
         else:
+            arg = Decimal(tokens[1])
+            if tokens[0] in ('-', '/'):
+                result = operator_map[tokens[0]](arg, result)
+            else:
+                result = reverse_operator_map[tokens[0]](result, arg)
             tokens = tokens[2:]
 
-    op = reverse_operator_map[tokens[0]]
-    arg = Decimal(tokens[1]) if tokens[2] == 'x' else Decimal(tokens[2])
-    return op(result, arg)
+    return result
 
 
 def part_one():
